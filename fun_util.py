@@ -99,7 +99,7 @@ def get_img_contour_thresh(img):
 	thresh = cv2.merge((thresh,thresh,thresh))
 	thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 	thresh = thresh[y:y+h, x:x+w]
-	contours = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)[1]
+	contours = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)[0]
 	return img, contours, thresh
 
 def say_text(text):
@@ -122,6 +122,7 @@ def calculator_mode(cam):
 	count_clear_frames = 0
 	while True:
 		img = cam.read()[1]
+		img = cv2.resize(img, (640, 480))
 		img, contours, thresh = get_img_contour_thresh(img)
 		old_pred_text = pred_text
 		if len(contours) > 0:
@@ -154,7 +155,10 @@ def calculator_mode(cam):
 						#Thread(target=say_text, args=(info,)).start()
 						second = ''
 						flag['clear'] = True
-						calc_text += "= "+str(eval(calc_text))
+						try:
+							calc_text += "= "+str(eval(calc_text))
+						except:
+							calc_text = "Invalid operation"
 						if is_voice_on:
 							speech = calc_text
 							speech = speech.replace('-', ' minus ')
@@ -237,6 +241,7 @@ def text_mode(cam):
 	count_same_frame = 0
 	while True:
 		img = cam.read()[1]
+		img = cv2.resize(img, (640, 480))
 		img, contours, thresh = get_img_contour_thresh(img)
 		old_text = text
 		if len(contours) > 0:
